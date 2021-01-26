@@ -13,6 +13,7 @@ AMPY_IGNORE=(".gitignore" "README.md" "init_device.sh" "$INSTALL_FILE")
 # directory
 check_dir_cmd="ampy ls"
 make_dir_cmd="ampy mkdir"
+install_cmd="ampy run"
 
 # file
 check_file_cmd="ampy get"
@@ -95,18 +96,23 @@ handle_dir() {
     done
 }
 
-
- 
-
-# ampy_ignore_contains  ".gitignore"
-# ampy_ignore_contains "init_device.sh"
-#ampy_ignore_contains "install.py"
-
+maybe_install() {
+    # NOTE: run after moving all files
+    local py_install_file=$1
+    local ampy_ret=$($check_file_cmd $py_install_file 2> /dev/null)
+    if [[ $ampy_ret ]]; then
+        local out=$($install_cmd $py_install_file)
+        local MSG="${py_install_file} ran:\n$out"
+        echo -e "$MSG"
+    else
+        echo "install file ($py_install_file) does not exist on device"
+    fi
+}
 
 
 TEST_file="jack.py"
 # #handle_dir $MAIN_DIR
-maybe_put_file $TEST_file 
-
+#maybe_put_file $TEST_file 
+maybe_install $INSTALL_FILE
 #echo $AMPY_IGNORE
 
