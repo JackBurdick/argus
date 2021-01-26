@@ -7,7 +7,8 @@ try() { "$@" || die "cannot $*"; }
 # TODO: not just check if it exists, but also check if it's the same
 
 MAIN_DIR="./src"
-AMPY_IGNORE=(".gitignore" "README.md" "init_device.sh")
+INSTALL_FILE="install.py"
+AMPY_IGNORE=(".gitignore" "README.md" "init_device.sh" "$INSTALL_FILE")
 
 # directory
 check_dir_cmd="ampy ls"
@@ -16,6 +17,15 @@ make_dir_cmd="ampy mkdir"
 # file
 check_file_cmd="ampy get"
 put_file_cmd="ampy put"
+
+ampy_ignore_contains() {
+    # starting point: https://stackoverflow.com/questions/8063228/check-if-a-variable-exists-in-a-list-in-bash
+    if [[ "${AMPY_IGNORE[@]}" =~ (^|[[:space:]])"$1"($|[[:space:]]) ]]; then
+        echo 1;
+    else
+        echo 0;
+    fi
+}
 
 make_path () { 
     local f=$1
@@ -54,12 +64,18 @@ maybe_put_file() {
     else
         # NOTE: the local file should exist (since it's created by an ls)
         local full_path=$(make_path $cur_file $cur_dir)
-        local out=$($put_file_cmd $full_path)
-        if [[ out -ne "" ]]; then
-            echo "error putting $full_path on device"
+        local file_exists=$(ampy_ignore_contains $full_path)
+        if [[ $file_exists == 0 ]]; then
+            echo "in here"
+            local out=$($put_file_cmd $full_path)
+            if [[ out -ne "" ]]; then
+                echo "error putting $full_path on device"
+            else
+            # NOTE: if file is empty, will overwrite
+            echo "$full_path put on device"
+            fi
         else
-          # NOTE: if file is empty, will overwrite
-          echo "$full_path put on device"
+            echo "file $full_path already exists"
         fi
     fi
 }
@@ -80,25 +96,17 @@ handle_dir() {
 }
 
 
+ 
+
+# ampy_ignore_contains  ".gitignore"
+# ampy_ignore_contains "init_device.sh"
+#ampy_ignore_contains "install.py"
+
+
+
 TEST_file="jack.py"
-#handle_dir $MAIN_DIR
+# #handle_dir $MAIN_DIR
 maybe_put_file $TEST_file 
 
-
-# # ampy put boot.py
-# # ampy mkdir tinyweb
-# # ampy put tinyweb/server.py ./tinyweb/server.py
-
-
-# FILE_EXISTS=$($check_dir_cmd tinyweb)
-# if [ -z ${FILE_EXISTS+x} ]; then
-#   # not present
-#   try echo "hi"
-# else
-#   # exists
-#   try echo 'exists'
-# fi
-
-
-
 #echo $AMPY_IGNORE
+
