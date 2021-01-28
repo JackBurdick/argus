@@ -13,15 +13,16 @@ try() { "$@" || die "cannot $*"; }
 MAIN_DIR="src"
 INSTALL_FILE="install.py"
 AMPY_IGNORE=(".gitignore" "README.md" "init_device.sh")
+PYTHON_CMD="/home/jackburdick/anaconda3/envs/esp/bin/python -m ampy.cli"
 
 # directory commands
-check_dir_cmd="ampy ls"
-make_dir_cmd="ampy mkdir"
+check_dir_cmd="ls"
+make_dir_cmd="mkdir"
 
 # file commands
-check_file_cmd="ampy get"
-put_file_cmd="ampy put"
-install_cmd="ampy run"
+check_file_cmd="get"
+put_file_cmd="put"
+install_cmd="run"
 
 ampy_ignore_contains() {
     # starting point: https://stackoverflow.com/questions/8063228/check-if-a-variable-exists-in-a-list-in-bash
@@ -32,15 +33,19 @@ ampy_ignore_contains() {
     fi
 }
 
-make_path () { 
+make_path () {
+    # presently this function is not needed, in that it only concatenates the
+    # directory and file. However, I'm leaving in place as this logic may need
+    # to change in the future
     local f=$1
     local d=$2
     local full_path=""
-    if [[ $d == "" ]]; then
-        full_path="$f"
-    else
-        full_path="$d$f"
-    fi
+    full_path="$d$f"
+    # if [[ $d == "" ]]; then
+    #     full_path="$f"
+    # else
+    #     full_path="$d$f"
+    # fi
     echo $full_path
 }
 
@@ -48,11 +53,11 @@ make_path () {
 maybe_make_device_dir() { 
     local cur_dir=$1
     # suppress error
-    local ampy_ret=$($check_dir_cmd $cur_dir 2> /dev/null)
+    local ampy_ret=$($PYTHON_CMD $check_dir_cmd $cur_dir 2> /dev/null)
     if [[ $ampy_ret ]]; then
         echo "$ampy_ret exists"
     else
-        out=$($make_dir_cmd $cur_dir 2> /dev/null)
+        out=$($PYTHON_CMD $make_dir_cmd $cur_dir 2> /dev/null)
         echo "$cur_dir created"
     fi
 }
@@ -60,7 +65,7 @@ maybe_make_device_dir() {
 maybe_put_file() { 
     local cur_file=$1
     local cur_dir=$2
-    local ampy_ret=$($check_file_cmd $cur_dir/$cur_file 2> /dev/null)
+    local ampy_ret=$($PYTHON_CMD $check_file_cmd $cur_dir/$cur_file 2> /dev/null)
     if [[ $ampy_ret ]]; then
         echo "$cur_file exists on device"
     else
@@ -70,7 +75,7 @@ maybe_put_file() {
         if [[ $file_exists == 0 ]]; then
             # echo "attempt to put file on dev: $full_path"
             local f_without_main_dir=${f//*$MAIN_DIR\//}
-            local out=$($put_file_cmd $full_path $f_without_main_dir)
+            local out=$($PYTHON_CMD $put_file_cmd $full_path $f_without_main_dir)
             if [[ out -ne "" ]]; then
                 echo "error putting $full_path on device"
             else
@@ -138,7 +143,7 @@ handle_dir() {
 maybe_install() {
     # NOTE: run after moving all files
     local py_install_file=$1
-    local out=$($install_cmd $py_install_file)
+    local out=$($PYTHON_CMD $install_cmd $py_install_file)
     local MSG="${py_install_file} ran:\n$out"
     echo -e "$MSG"
 
