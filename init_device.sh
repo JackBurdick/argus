@@ -17,7 +17,7 @@ PYTHON_CMD="/home/jackburdick/anaconda3/envs/esp/bin/python -m ampy.cli"
 
 # directory commands
 check_dir_cmd="ls"
-make_dir_cmd="mkdir"
+make_dir_cmd="mkdir --exists-okay"
 
 # file commands
 check_file_cmd="get"
