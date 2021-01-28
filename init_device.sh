@@ -2,7 +2,7 @@
 
 # NOTE: this is a rough personal use script, run at your own risk
 
-yell() { echo "$0: $*" >&2; }
+yell() { echo -e "$0: $*" >&2; }
 die() { yell "$*"; exit 111; }
 try() { "$@" || die "cannot $*"; }
 
@@ -23,6 +23,14 @@ make_dir_cmd="mkdir"
 check_file_cmd="get"
 put_file_cmd="put"
 install_cmd="run"
+
+
+ampy_check_device_present () {
+    local ERROR=$($PYTHON_CMD $check_dir_cmd 2>&1 > /dev/null)
+    if [[ $ERROR != "" ]]; then
+        die "Device does not seem to be connected \n Error below: \n $ERROR"
+    fi
+}
 
 ampy_ignore_contains() {
     # starting point: https://stackoverflow.com/questions/8063228/check-if-a-variable-exists-in-a-list-in-bash
@@ -149,6 +157,12 @@ maybe_install() {
 
 }
 
+# check if device is present and die if not
+try ampy_check_device_present
 
-handle_dir $MAIN_DIR
-maybe_install $INSTALL_FILE
+# recursively iterative files and subdirectories in the specified directory and
+# place on device (ignoring those specified)
+try handle_dir $MAIN_DIR
+
+# attempt to install the listed packages in the install.py file
+try maybe_install $INSTALL_FILE
