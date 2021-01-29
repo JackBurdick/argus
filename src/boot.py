@@ -1,6 +1,6 @@
 import network
 import time
-import secrets as sc
+import src.app.secrets as sc
 
 import esp
 
