@@ -1,6 +1,8 @@
 from ulog import ULog
 from app.start import begin
 from updater.ota_updater import OTAUpdater
+import app.secrets as sc
+
 
 # logger = ULog("main.py")
 run_logger = ULog("runtime")
@@ -17,7 +19,8 @@ def maybe_download_and_install_update():
     )
     run_logger.info("ota_updater created")
 
-    ota_updater.install_update_if_available()
+    # ota_updater.install_update_if_available()
+    ota_updater.install_update_if_available_after_boot(sc.SSID, sc.PASSWORD)
     run_logger.info("installing if available")
 
     del ota_updater
@@ -26,3 +29,6 @@ def maybe_download_and_install_update():
 def boot():
     maybe_download_and_install_update()
     begin()
+
+
+boot()
