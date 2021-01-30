@@ -7,6 +7,7 @@ import network
 import gc
 import json
 from ulog import ULog
+import machine
 
 # import machine
 
@@ -15,6 +16,7 @@ IMG_PATH_TEMPLATE = "sd/{}__{}__{}.jpg"
 V1_BASE_PATH = "/api/v1"
 BASE_SD_DIR = "/sd"
 IMG_API_PATH = "{}/{}".format(V1_BASE_PATH, "retrieve")
+RESET_API_PATH = "{}/{}".format(V1_BASE_PATH, "reset")
 IMG_API_CAPTURE_PATH = "{}/{}".format(V1_BASE_PATH, "obtain")
 
 logger = ULog("main.py")
@@ -125,6 +127,22 @@ class Capture:
         else:
             resp = {"cam": img_cap}
             return resp, 200
+
+
+def reset_machine():
+    machine.reset()
+
+
+@app.route(RESET_API_PATH)
+async def reset(req, resp):
+    msg = {"message": "reset"}
+    resp.code = 200
+    resp.add_header("Content-Type", "application/json")
+    msg_json = json.dumps(msg)
+    resp.add_header("Content-Length", len(msg_json))
+    await resp._send_headers()
+    await resp.send(msg_json)
+    reset_machine()
 
 
 class SDFiles:
