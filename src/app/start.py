@@ -1,7 +1,7 @@
 import tinyweb
 import time
-from cam import setup_cam
-from sd import setup_sd
+from .cam import setup_cam
+from .sd import setup_sd
 import uos
 import network
 import gc
