@@ -1,12 +1,15 @@
-import network
+import gc
 import time
-import app.secrets as sc
 
+import app.secrets as sc
 import esp
+import network
+from ulog import ULog
 
 esp.osdebug(None)
 
-import gc
+boot_logger = ULog("boot_logger")
+
 
 gc.collect()
 
@@ -23,4 +26,4 @@ def network_connect():
 
 
 ip = network_connect()
-print(ip)
+boot_logger.info("ip: {}".format(ip))

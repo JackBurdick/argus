@@ -1,15 +1,13 @@
-from ulog import ULog
+import machine
 from app.start import begin
+from ulog import ULog
 from updater.ota_updater import OTAUpdater
-import app.secrets as sc
 
-
-# logger = ULog("main.py")
-run_logger = ULog("runtime")
+install_logger = ULog("install")
 
 
 def maybe_download_and_install_update():
-    run_logger.info("Checking for Updates...")
+    install_logger.info("Checking for Updates...")
 
     ota_updater = OTAUpdater(
         "https://github.com/JackBurdick/argus",
@@ -17,11 +15,14 @@ def maybe_download_and_install_update():
         main_dir="app",
         secrets_file="secrets.py",
     )
-    run_logger.info("ota_updater created")
+    install_logger.info("ota_updater created")
 
-    # ota_updater.install_update_if_available()
-    ota_updater.install_update_if_available_after_boot(sc.SSID, sc.PASSWORD)
-    run_logger.info("installing if available")
+    new_update_installed = ota_updater.install_update_if_available()
+    install_logger.info("no new update installed")
+    if new_update_installed:
+        install_logger.info("installed update")
+        install_logger.info("restarting machine")
+        machine.reset()
 
     del ota_updater
 
