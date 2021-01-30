@@ -19,11 +19,12 @@ IMG_API_CAPTURE_PATH = "{}/{}".format(V1_BASE_PATH, "obtain")
 logger = ULog("main.py")
 run_logger = ULog("runtime")
 
-# LED = machine.Pin(1, machine.Pin.OUT)
-# time.sleep_ms(300)
-# logger.info("led set to pin 1")
-# LED.off()
-# logger.info("led.off")
+LED_PIN = 15
+LED = machine.Pin(LED_PIN, machine.Pin.OUT)
+time.sleep_ms(300)
+logger.info("led set to pin {}".format(LED_PIN))
+LED.off()
+logger.info("led.off")
 
 # TODO: check if connected
 
@@ -44,12 +45,18 @@ logger.debug("app webserver created")
 
 def _capture_image():
     global CAM
+    global LED
     try:
-        # LED.on()
-        # time.sleep_ms(500)
+        LED.on()
+        time.sleep_ms(500)
         buf = CAM.capture()
+        time.sleep_ms(200)
+        LED.off()
     except Exception as e:
-        raise Exception("unable to capture image: {}".format(e))
+        LED.off()
+        raise Exception("unable to capture image (LED OFF): {}".format(e))
+    finally:
+        LED.off()
     return buf
 
 
@@ -64,7 +71,6 @@ def _write_image(cam_info):
         f.write(buf)
         time.sleep_ms(100)
         f.close()
-        # LED.off()
         ret["path"] = img_path
         ret["bucket"] = cam_info["bucket"]
         ret["index"] = cam_info["index"]
