@@ -10,7 +10,7 @@ from ulog import ULog
 import machine
 
 
-IMG_PATH_TEMPLATE = "resources/{}__{}__{}.jpg"
+IMG_PATH_TEMPLATE = "app/resources/{}__{}__{}.jpg"
 V1_BASE_PATH = "/api/v1"
 IMG_API_PATH = "{}/{}".format(V1_BASE_PATH, "retrieve")
 RESET_API_PATH = "{}/{}".format(V1_BASE_PATH, "reset")
@@ -231,7 +231,7 @@ def run():
     logger.debug("add resource: {}".format(Status.url))
 
     logger.debug("calling app.run()")
-    logger.to_file("/resources/mylog.json")
+    logger.to_file("app/resources/mylog.json")
     app.run()
 
 
