@@ -142,6 +142,7 @@ async def reset(req, resp):
     resp.add_header("Content-Length", len(msg_json))
     await resp._send_headers()
     await resp.send(msg_json)
+    time.sleep(2)
     reset_machine()
 
 
