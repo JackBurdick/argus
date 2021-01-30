@@ -1,6 +1,6 @@
-import time
 import json
 import logging
+import time
 
 
 class ULog:

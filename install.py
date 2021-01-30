@@ -1,4 +1,5 @@
-import upip, uos
+import uos
+import upip
 
 install_location = "lib"
 install_names = {"micropython-logging": "logging.py"}
