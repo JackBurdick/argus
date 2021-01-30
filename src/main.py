@@ -1,5 +1,4 @@
 import machine
-from app.start import begin
 from ulog import ULog
 from updater.ota_updater import OTAUpdater
 
@@ -29,6 +28,10 @@ def maybe_download_and_install_update():
 
 def boot():
     maybe_download_and_install_update()
+
+    # import after updating device
+    from app.start import begin
+
     begin()
 
 
