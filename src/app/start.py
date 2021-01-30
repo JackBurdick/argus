@@ -9,7 +9,7 @@ import json
 from ulog import ULog
 import machine
 
-
+# RESOURCE_DIR = "app/resources"
 IMG_PATH_TEMPLATE = "app/resources/{}__{}__{}.jpg"
 V1_BASE_PATH = "/api/v1"
 IMG_API_PATH = "{}/{}".format(V1_BASE_PATH, "retrieve")
@@ -85,10 +85,15 @@ class Status:
     url = "{}/{}".format(V1_BASE_PATH, "status")
 
     def get(self, data):
+        try:
+            files = uos.listdir("app/resources")
+        except Exception:
+            files = []
         mem = {
             "mem_alloc": gc.mem_alloc(),
             "mem_free": gc.mem_free(),
             "mem_total": gc.mem_alloc() + gc.mem_free(),
+            "files": {"app/resources": files},
         }
         sta_if = network.WLAN(network.STA_IF)
         ifconfig = sta_if.ifconfig()
@@ -120,6 +125,7 @@ async def reset(req, resp):
 
 @app.route(IMG_API_PATH)
 async def images(req, resp):
+    # TODO: include functionality to delete
     qs = req.query_string
     try:
         qs_d = _basic_parse_qs(qs)
@@ -236,8 +242,7 @@ def run():
 
 
 def begin():
-    print("hello from tinyweb")
-    logger.debug("running as script")
+    logger.debug("running begin() in start.py")
     try:
         run()
     except Exception as e:
