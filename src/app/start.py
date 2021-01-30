@@ -9,12 +9,9 @@ import json
 from ulog import ULog
 import machine
 
-# import machine
 
-
-IMG_PATH_TEMPLATE = "sd/{}__{}__{}.jpg"
+IMG_PATH_TEMPLATE = "resources/{}__{}__{}.jpg"
 V1_BASE_PATH = "/api/v1"
-BASE_SD_DIR = "/sd"
 IMG_API_PATH = "{}/{}".format(V1_BASE_PATH, "retrieve")
 RESET_API_PATH = "{}/{}".format(V1_BASE_PATH, "reset")
 IMG_API_CAPTURE_PATH = "{}/{}".format(V1_BASE_PATH, "obtain")
@@ -29,10 +26,6 @@ run_logger = ULog("runtime")
 # logger.info("led.off")
 
 # TODO: check if connected
-sd = setup_sd(logger)
-logger.info("sd setup")
-uos.mount(sd, "/sd")
-logger.info("sd card mounted")
 
 CAM = None
 if not CAM:
@@ -108,27 +101,6 @@ class Status:
         return {"memory": mem, "network": net}, 200
 
 
-class Capture:
-    url = "{}/{}".format(V1_BASE_PATH, "capture")
-
-    def post(self, data):
-        try:
-            img_cap = None
-            if data:
-                try:
-                    cam_info = data["cam"]
-                except KeyError:
-                    cam_info = None
-                # cams: {index: ___, ts: ___}
-                img_cap = _write_image(cam_info)
-        except Exception as e:
-            resp = {"error": e}
-            return resp, 400
-        else:
-            resp = {"cam": img_cap}
-            return resp, 200
-
-
 def reset_machine():
     machine.reset()
 
@@ -144,43 +116,6 @@ async def reset(req, resp):
     await resp.send(msg_json)
     time.sleep(2)
     reset_machine()
-
-
-class SDFiles:
-    url = "{}/{}".format(V1_BASE_PATH, "sdfiles")
-
-    def get(self, data):
-        try:
-            files = uos.listdir(BASE_SD_DIR)
-            # remove dotfiles
-            files = [f for f in files if not f.startswith(".")]
-            # {"files": ["now_2.jpg", "0_12_26_2020__11_43_10.jpg"]}
-        except Exception as e:
-            resp = {"error": e}
-            return resp, 400
-        else:
-            resp = {"files": files}
-            return resp, 200
-
-    def delete(self, data):
-        # e.g. "now_2.jpg"
-        try:
-            f_name = data["file_name"]
-        except KeyError:
-            f_name = None
-        if f_name:
-            f_path = "{}/{}".format(BASE_SD_DIR, f_name)
-            try:
-                f = open(f_path, "r")
-            except OSError:
-                resp = ({"message": "file not found: {}".format(f_path)}, 400)
-            else:
-                f.close()
-                uos.remove("{}".format(f_path))
-                resp = ({"message": "file deleted: {}".format(f_path)}, 200)
-        else:
-            resp = ({"message": "no `file_name` detected. data: {}".format(data)}, 400)
-        return resp[0], resp[1]
 
 
 @app.route(IMG_API_PATH)
@@ -295,14 +230,8 @@ def run():
     app.add_resource(Status, Status.url)
     logger.debug("add resource: {}".format(Status.url))
 
-    app.add_resource(Capture, Capture.url)
-    logger.debug("add resource: {}".format(Capture.url))
-
-    app.add_resource(SDFiles, SDFiles.url)
-    logger.debug("add resource: {}".format(SDFiles.url))
-
     logger.debug("calling app.run()")
-    logger.to_file("/sd/mylog.json")
+    logger.to_file("/resources/mylog.json")
     app.run()
 
 
