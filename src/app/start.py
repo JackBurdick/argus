@@ -202,23 +202,32 @@ async def image_capture(req, resp):
         index = None
         bucket = None
 
-    cam_info = {}
-    cam_info["bucket"] = bucket
-    cam_info["index"] = index
-    cam_info["ts"] = ts
-
     if bucket is not None and index is not None and ts is not None:
-        ret = _write_image(cam_info)
-        fp = ret["path"]
-        await resp.send_file(fp, content_type="image/jpeg", max_age=0)
+        cam_buf = _capture_image()
         try:
-            f = open(fp, "r")
-        except OSError:
-            pass
-            # TODO: handle
-        else:
-            f.close()
-            uos.remove("{}".format(fp))
+            await resp.send_buffer(cam_buf)
+        except Exception as e:
+            note = None
+            try:
+                img_path = IMG_PATH_TEMPLATE.format(bucket, index, ts)
+                f = open(img_path, "w")
+                f.write(cam_buf)
+                time.sleep_ms(100)
+                f.close()
+            except Exception as e:
+                img_path = None
+                note = "unable to save.. {}".format(e)
+            msg = {
+                "message": "bucket ({}) index ({}) or ts ({}) unable to send. saved at {}. note: {}".format(
+                    bucket, index, ts, img_path, note
+                )
+            }
+            resp.code = 400
+            resp.add_header("Content-Type", "application/json")
+            msg_json = json.dumps(msg)
+            resp.add_header("Content-Length", len(msg_json))
+            await resp._send_headers()
+            await resp.send(msg_json)
 
     else:
         msg = {
