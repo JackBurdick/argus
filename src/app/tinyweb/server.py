@@ -260,6 +260,40 @@ class response:
         self.add_header("Content-Type", "text/html")
         await self._send_headers()
 
+    async def send_buffer(
+        self, cam_buf, content_type="image/jpeg", content_encoding=None, max_age=0
+    ):
+        """"""
+        try:
+            # Get buffer size
+            buf_len = str(len(cam_buf))
+            self.add_header("Content-Length", buf_len)
+            # Find content type
+            if content_type:
+                self.add_header("Content-Type", content_type)
+            # Add content-encoding, if any
+            if content_encoding:
+                self.add_header("Content-Encoding", content_encoding)
+            self.add_header("Cache-Control", "max-age={}, public".format(max_age))
+            cur_start = 0
+            chunk_sz = 128
+            r = len(cam_buf) % chunk_sz
+            if r:
+                one_more = 1
+            else:
+                one_more = 0
+            for _ in range((len(cam_buf) // chunk_sz) + one_more):
+                cur_stop = cur_start + chunk_sz
+                buf_part = cam_buf[cur_start:cur_stop]
+                cur_start += chunk_sz
+                await self.send(buf_part, sz=len(buf_part))
+        except OSError as e:
+            # special handling for ENOENT / EACCESS
+            if e.args[0] in (errno.ENOENT, errno.EACCES):
+                raise HTTPException(404)
+            else:
+                raise
+
     async def send_file(
         self, filename, content_type=None, content_encoding=None, max_age=2592000
     ):
