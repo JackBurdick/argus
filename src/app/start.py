@@ -1,4 +1,4 @@
-import tinyweb
+from .tinyweb import webserver
 import time
 from .cam import setup_cam
 from .sd import setup_sd
@@ -32,7 +32,7 @@ CAM = None
 if not CAM:
     CAM = setup_cam(logger)
 logger.info("camera setup")
-app = tinyweb.webserver(
+app = webserver(
     host="0.0.0.0",
     port=8081,
     request_timeout=4,
@@ -206,7 +206,7 @@ async def image_capture(req, resp):
         cam_buf = _capture_image()
         try:
             await resp.send_buffer(cam_buf)
-        except Exception as e:
+        except Exception as e1:
             note = None
             try:
                 img_path = IMG_PATH_TEMPLATE.format(bucket, index, ts)
@@ -214,12 +214,12 @@ async def image_capture(req, resp):
                 f.write(cam_buf)
                 time.sleep_ms(100)
                 f.close()
-            except Exception as e:
+            except Exception as e2:
                 img_path = None
-                note = "unable to save.. {}".format(e)
+                note = "unable to save.. e2: {}".format(e2)
             msg = {
-                "message": "bucket ({}) index ({}) or ts ({}) unable to send. saved at {}. note: {}".format(
-                    bucket, index, ts, img_path, note
+                "message": "bucket ({}) index ({}) or ts ({}) unable to send. saved at {}. note: {} e: {}".format(
+                    bucket, index, ts, img_path, note, e1
                 )
             }
             resp.code = 400
