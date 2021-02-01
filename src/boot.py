@@ -4,11 +4,12 @@ import time
 import app.secrets as sc
 import esp
 import network
-from ulog import ULog
+
+# from ulog import ULog
 
 esp.osdebug(None)
 
-boot_logger = ULog("boot_logger")
+# boot_logger = ULog("boot_logger")
 
 
 gc.collect()
@@ -26,4 +27,4 @@ def network_connect():
 
 
 ip = network_connect()
-boot_logger.info("ip: {}".format(ip))
+print("ip: {}".format(ip))

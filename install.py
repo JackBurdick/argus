@@ -1,5 +1,14 @@
+import time
 import uos
 import upip
+
+from boot import network_connect
+
+SLEEP_TIME = 3
+ip = network_connect()
+print("ip: {}".format(ip))
+print("sleeping {} seconds".format(SLEEP_TIME))
+time.sleep(SLEEP_TIME)
 
 install_location = "lib"
 install_names = {"micropython-logging": "logging.py"}

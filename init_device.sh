@@ -12,6 +12,7 @@ try() { "$@" || die "cannot $*"; }
 
 MAIN_DIR="src"
 INSTALL_FILE="install.py"
+RESTART_FILE="restart.py"
 AMPY_IGNORE=(".gitignore" "README.md" "init_device.sh")
 PYTHON_CMD="/home/jackburdick/anaconda3/envs/esp/bin/python -m ampy.cli"
 
@@ -157,12 +158,24 @@ maybe_install() {
 
 }
 
+maybe_restart() {
+    local py_restart_file=$1
+    # error will occur since device will restart
+    local out=$($PYTHON_CMD $install_cmd $py_restart_file  2>&1 > /dev/null)
+    local MSG="${py_restart_file} ran:\n$out"
+    echo -e "$MSG"
+
+}
+
 # check if device is present and die if not
 try ampy_check_device_present
 
 # recursively iterative files and subdirectories in the specified directory and
 # place on device (ignoring those specified)
 try handle_dir $MAIN_DIR
+
+# attempt to restart before install
+try maybe_restart $RESTART_FILE
 
 # attempt to install the listed packages in the install.py file
 try maybe_install $INSTALL_FILE
