@@ -4,7 +4,7 @@ import time
 
 
 def setup_cam(logger):
-    QUALITY = 12
+    QUALITY = 40
     try:
         camera.init(0)
     except OSError as e:
